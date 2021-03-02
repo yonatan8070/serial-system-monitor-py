@@ -2,10 +2,22 @@ import wmi
 from time import sleep
 
 w = wmi.WMI(namespace="root\\OpenHardwareMonitor")
-sensors = w.Sensor()
-# for sensor in temperature_infos:
-#     if sensor.SensorType == u'Temperature':
-#         print(sensor.Value)
+rawSensors = w.Sensor()
 
-for sensor in sensors:
-    print(sensor)
+sensors = {'Voltage': {},
+           'Clock': {},
+           'Temperature': {},
+           'Load': {},
+           'Fan': {},
+           'Flow': {},
+           'Control': {},
+           'Level': {},
+           'Data': {},
+           'Power': {}}
+index = 0
+
+for sensor in rawSensors:
+    sensors[sensor.SensorType][sensor.Name] = sensor
+    index += 1
+
+print(sensors['Temperature']['CPU Package'])
