@@ -10,10 +10,9 @@ class Data:
         self.gpuUsage = gpuUsage
 
     def serialize(self):
-        result = b'd:'                         # Packet starts with D to represent Data
-        result += b'ct' + str(int(self.cpuTemp)).encode() + b';'   # ct represents CPU temperature
-        result += b'cu' + str(int(self.cpuUsage)).encode() + b';'  # cu represents CPU usage
-        result += b'gt' + str(int(self.gpuTemp)).encode() + b';'   # gt represents GPU temperature
-        result += b'gu' + str(int(self.gpuUsage)).encode() + b';'  # gu represents GPU usage
+        result  = b'ct ' + str(int(self.cpuTemp)).encode() + b'\n'   # ct represents CPU temperature
+        # result += b'cu ' + str(int(self.cpuUsage)).encode() + b'\n'  # cu represents CPU usage
+        result += b'gt ' + str(int(self.gpuTemp)).encode() + b'\n'   # gt represents GPU temperature
+        # result += b'gu ' + str(int(self.gpuUsage)).encode() + b'\n'  # gu represents GPU usage
 
-        return result + b'\n'
+        return result
