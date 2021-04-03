@@ -1,51 +1,43 @@
 from time import sleep
-from Data import Data
-import wmi
+
+import psutil
 import serial
+
+from Data import Data
 
 
 def main():
-    w = wmi.WMI(namespace="root\\OpenHardwareMonitor")
-    rawSensors = w.Sensor()
+    psutil.cpu_percent(percpu=True)
 
-    sensors = {'Voltage': {},
-               'Clock': {},
-               'Temperature': {},
-               'Load': {},
-               'Fan': {},
-               'Flow': {},
-               'Control': {},
-               'Level': {},
-               'Data': {},
-               'Power': {},
-               'SmallData': {}}
-    index = 0
+    # temp = psutil.sensors_temperatures()
+    # temp = temp["coretemp"][0][1]
 
-    for sensor in rawSensors:
-        sensors[sensor.SensorType][sensor.Name] = sensor
-        index += 1
+    # print(temp)
 
-    temps = sensors['Temperature']
-    usage = sensors['Load']
+    for i in range(5):
+        cpuUsage = psutil.cpu_percent(percpu=True)
+        arduinoData = Data(cpuTemp=psutil.sensors_temperatures()["coretemp"][0][1],
+                           cpuUsage=[int(x) for x in cpuUsage],
+                           cpuTotal=psutil.cpu_percent(),
+                           gpuTemp=psutil.sensors_temperatures()["amdgpu"][0][1])
 
-    for data in temps.values():
-        print(data)
+        serialized = arduinoData.serialize()
 
-    arduinoData = Data(cpuTemp=temps['CPU Package'].Value,
-                       cpuUsage=usage['CPU Total'].Value,
-                       gpuTemp=temps['GPU Core'].Value,
-                       gpuUsage=usage['GPU Core'].Value)
+        print(serialized)
+        sleep(0.5)
 
-    port = findSerialPort()
 
-    try:
-        ser = serial.Serial(port=port, baudrate=9600)
-        sleep(5)
-        print(arduinoData.serialize())
-        ser.write(arduinoData.serialize())
-        ser.close()
-    except:
-        print('Something went wrong while writing to the serial port')
+    # port = findSerialPort()
+
+    # try:
+    #     ser = serial.Serial(port=port, baudrate=9600)
+    #     sleep(5)
+    #     print(arduinoData.serialize())
+    #     ser.write(arduinoData.serialize())
+    #     ser.close()
+    # except:
+    #     print('Something went wrong while writing to the serial port')
+
 
 def findSerialPort():
     ports = ['COM%s' % (i + 1) for i in range(256)]
@@ -60,6 +52,16 @@ def findSerialPort():
             pass
 
     return result[0]
+
+
+def getSystemInfo():
+    result = ""
+
+    result += "cc" + psutil.cpu_count(logical=False) + "\n"
+    result += "mt" + psutil.virtual_memory().total / 1000000 + "\n"
+
+    return result
+
 
 if __name__ == '__main__':
     main()
